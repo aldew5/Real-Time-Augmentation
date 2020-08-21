@@ -1,2 +1,2 @@
 # Computer-Vision
-Video augmentation in real time
+Real-time video augmentation.
