@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from cv2 import aruco
+from four_point_transform import four_point_transform
 
 flatten = lambda l: [item for sublist in l for item in sublist]
 
@@ -11,55 +12,61 @@ aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
 parameters =  aruco.DetectorParameters_create()
 
 width, height = 200, 200
-dst = np.array([[0,0],[width - 1, 0],[width - 1, height - 1],[0, height - 1],], dtype='float32')
+#dst = np.array([[0,0],[width - 1, 0],[width - 1, height - 1],[0, height - 1],], dtype='float32')
 rect = np.zeros((4, 2), dtype = "float32")
 
+# external camera video capture object
 cap = cv2.VideoCapture(-1)
+# the augmentation video
 cap2 =  cv2.VideoCapture('_data/vtest.avi')
 
+# using both captures
 while(cap.isOpened() and cap2.isOpened()):
+    # frame object
     ret, frame = cap.read()
+    # dimensions
     frame_height, frame_width, frame_channels = frame.shape
+    
+    # load the park video 
     ret2, frame2 = cap2.read()
     
-    try: 
+    try:
+        # get the dimensions of the park video
         frame2_height, frame2_width, frame2_channels = frame2.shape
+        # resize to fit the marker
         video_frame = cv2.resize(frame2, (200, 200))
     except AttributeError:
         pass
-
+    
+    # convert to grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # detect markers
     corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
-    #print(len(corners))
+    # draw the corners and the ids on the detected markers
     frame_markers = aruco.drawDetectedMarkers(frame.copy(), corners, ids)
+    # save the frame of the real-time video
     img1 = frame
-
-
+    
+    # detecting at least one corner of a marker
     if (len(corners) > 0):
-        #print(type(ids))
-        #print(ids)
-        #print(len(ids))
+        # convert to a one-dimensional array
         ids2 = ids.flatten()
-        #print(ids2)
-        #print(len(ids2))
+        
         found_val = False
         eindex = -1
+        # look for a marker with the specified id
         for val in ids2:
-            eindex = eindex + 1
+            eindex += 1
             if (val == 2):
                 found_val = True
                 break
-        #print(found_val, eindex)
-
+        
+        # found the specified marker
         if(found_val):
-            # find four corners of the first pattern
-            rect[0] = corners[eindex][0][0]
-            rect[1] = corners[eindex][0][1]
-            rect[2] = corners[eindex][0][2]
-            rect[3] = corners[eindex][0][3]
-
-            M = cv2.getPerspectiveTransform(rect, dst)
-            warp = cv2.warpPerspective(frame, M, (width, height))
+            (warp, M) = four_point_transform(frame, np.array([corners[eindex][0][0],
+                                                corners[eindex][0][1],
+                                                corners[eindex][0][2],
+                                                corners[eindex][0][3]]), width, height)
             cv2.imshow('warp', warp)
         
             M_inverse = np.linalg.inv(M)
@@ -84,7 +91,7 @@ while(cap.isOpened() and cap2.isOpened()):
             img1[0:rows, 0:cols ] = dst2
 
     cv2.imshow('augmented', img1)
-    cv2.imshow('frame_markers', frame_markers)
+    #cv2.imshow('frame_markers', frame_markersarkers)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
