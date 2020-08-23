@@ -5,9 +5,6 @@ from four_point_transform import four_point_transform
 
 flatten = lambda l: [item for sublist in l for item in sublist]
 
-speed_sign_in = cv2.imread('_data/speed_80.bmp',cv2.IMREAD_COLOR)
-speed_sign = cv2.resize(speed_sign_in, (200, 200))
-
 aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
 parameters =  aruco.DetectorParameters_create()
 
