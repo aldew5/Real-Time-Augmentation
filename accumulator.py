@@ -16,7 +16,7 @@ rect = np.zeros((4, 2), dtype="float32")
 
 cap = cv2.VideoCapture(-1)
 cap2 = cv2.VideoCapture("_data/blue22.jpg")
-cap3 = cv2.("_data/green.jpeg")
+cap3 = cv2.VideoCapture("_data/green.jpeg")
 cap4 = cv2.VideoCapture("_data/green-blue.jpeg")
 cap5 = cv2.VideoCapture("_data/white.png")
 
