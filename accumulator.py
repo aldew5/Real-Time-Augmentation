@@ -16,11 +16,12 @@ rect = np.zeros((4, 2), dtype="float32")
 
 cap = cv2.VideoCapture(-1)
 cap2 = cv2.VideoCapture("_data/blue22.jpg")
-cap3 = cv2.VideoCapture("_data/green.jpeg")
+cap3 = cv2.("_data/green.jpeg")
 cap4 = cv2.VideoCapture("_data/green-blue.jpeg")
 cap5 = cv2.VideoCapture("_data/white.png")
 
 color = ""
+display = {1: True, 2: True}
 
 while (cap.isOpened()):
     ret, frame = cap.read()
@@ -62,7 +63,6 @@ while (cap.isOpened()):
         vals = [i for i in range(1, 5)]
         found = {1:[False], 2:[False], 3:[False], 4:[False]}
         #rint(type(found[1][0]))
-        display = {1: True, 2: True}
         
         
         for val in ids:
