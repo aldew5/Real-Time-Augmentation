@@ -3,6 +3,7 @@ import cv2
 from cv2 import aruco
 from four_point_transform import four_point_transform
 from four_point_transform import augment
+from distance import distance
 
 
 flatten = lambda l: [item for sublist in l for item in sublist]
@@ -17,6 +18,9 @@ cap = cv2.VideoCapture(-1)
 cap2 = cv2.VideoCapture("_data/blue22.jpg")
 cap3 = cv2.VideoCapture("_data/green.jpeg")
 cap4 = cv2.VideoCapture("_data/green-blue.jpeg")
+cap5 = cv2.VideoCapture("_data/white.png")
+
+color = ""
 
 while (cap.isOpened()):
     ret, frame = cap.read()
@@ -25,7 +29,8 @@ while (cap.isOpened()):
     ret2, frame2 = cap2.read()
     ret3, frame3 = cap3.read()
     ret4, frame4 = cap4.read()
-    print("frame4 is ", frame4)
+    ret5, frame5 = cap5.read()
+    #print("frame4 is ", frame4)
     
     try:
         frame2_height, frame2_width, frame2_channels = frame2.shape
@@ -37,6 +42,9 @@ while (cap.isOpened()):
         frame4_height, frame4_width, frame4_channels = frame4.shape
         video_frame3 = cv2.resize(frame4, (200, 200))
         
+        frame5_height, frame5_width, frame5_channels = frame5.shape
+        video_frame4 = cv2.resize(frame5, (200, 200))
+        
     except AttributeError:
         pass
     
@@ -46,12 +54,15 @@ while (cap.isOpened()):
     frame_markers = aruco.drawDetectedMarkers(frame.copy(), corners, ids)
     img1 = frame
     
+    
     if (len(corners) > 0):
         ids2 = ids.flatten()
         
         eindex = -1
         vals = [i for i in range(1, 5)]
         found = {1:[False], 2:[False], 3:[False], 4:[False]}
+        #rint(type(found[1][0]))
+        display = {1: True, 2: True}
         
         
         for val in ids:
@@ -59,23 +70,95 @@ while (cap.isOpened()):
             
             for i in vals:
                 if (i == val):
-                    print("val is ", val)
+                    #print("val is ", val)
                     found[val[0]][0] = True
                     found[val[0]].append(eindex)
         
-        if (found[1][0] and not found[3][0]):
-            augment(found[1][1], frame, corners, (width, height), video_frame,\
-                    (frame_width, frame_height), img1)
-        if (found[2][0] and not found[3][0]):
-            augment(found[2][1], frame, corners, (width, height), video_frame2,\
-                    (frame_width, frame_height), img1)
+                    
+        if (found[1][0]):
+            # also found the accumulator
+            if (found[3][0]):
+                tl = corners[found[1][1]][0][0]
+                tr = corners[found[1][1]][0][1]
+                br = corners[found[1][1]][0][2]
+                bl = corners[found[1][1]][0][3]
+                
+                tl2 = corners[found[3][1]][0][0]
+                tr2 = corners[found[3][1]][0][1]
+                br2 = corners[found[3][1]][0][2]
+                bl2 = corners[found[3][1]][0][3]
+                
+                d = distance(tl, tr, br, bl, tl2, tr2, br2, bl2)
+                
+                # the distance is small enough
+                if (d <= 250):
+                    # accumualtor is white
+                    if (color == ""):
+                        color = "blue"
+                    # accumulate the colors
+                    elif (color == "green"):
+                        color = "blue-green"
+                    display[1] = False
+                    
+                elif (display[1]):
+                    augment(found[1][1], frame, corners, (width, height), video_frame,\
+                        (frame_width, frame_height), img1)
+            # didn't find the accumulator (augment normally)
+            elif (display[1]):
+                augment(found[1][1], frame, corners, (width, height), video_frame,\
+                        (frame_width, frame_height), img1)
+                
+        if (found[2][0]):
+            if (found[3][0]):
+                tl = corners[found[2][1]][0][0]
+                tr = corners[found[2][1]][0][1]
+                br = corners[found[2][1]][0][2]
+                bl = corners[found[2][1]][0][3]
+                
+                tl2 = corners[found[3][1]][0][0]
+                tr2 = corners[found[3][1]][0][1]
+                br2 = corners[found[3][1]][0][2]
+                bl2 = corners[found[3][1]][0][3]
+                
+                d = distance(tl, tr, br, bl, tl2, tr2, br2, bl2)
+                
+                if (d <= 250):
+                    if (color == ""):
+                        color = "green"
+                    elif (color == "blue"):
+                        color = "blue-green"
+                        
+                    display[2] = False
+                elif (display[2]):
+                    augment(found[2][1], frame, corners, (width, height), video_frame2,\
+                        (frame_width, frame_height), img1)
+            
+            elif (display[2]):
+                augment(found[2][1], frame, corners, (width, height), video_frame2,\
+                        (frame_width, frame_height), img1)
         
-        if (found[2][0] and found[1][0] and found[3][0]): 
-            augment(found[3][1], frame, corners, (width, height), video_frame3,\
-                    (frame_width, frame_height), img1)
+        if (not found[3][0]):
+            display[1] = True
+            display[2] = True
+            color = ""
+        else:
+            if (color == ""):
+                augment(found[3][1], frame, corners, (width, height), video_frame4,\
+                            (frame_width, frame_height), img1)
+            elif (color == "blue"):
+                augment(found[3][1], frame, corners, (width, height), video_frame,\
+                            (frame_width, frame_height), img1)
+            elif (color == "green"):
+                augment(found[3][1], frame, corners, (width, height), video_frame2,\
+                        (frame_width, frame_height), img1)
+            else:
+                augment(found[3][1], frame, corners, (width, height), video_frame3,\
+                        (frame_width, frame_height), img1)
+      
             
     cv2.imshow('augmented', img1)
     cv2.imshow('frame_markers', frame_markers)
+    #print("color is ", color)
     
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
@@ -83,5 +166,4 @@ while (cap.isOpened()):
 cap.release()
 cv2.destroyAllWindows()
                 
-
 
