@@ -15,10 +15,16 @@ width, height = 200, 200
 rect = np.zeros((4, 2), dtype="float32")
 
 cap = cv2.VideoCapture(-1)
-cap2 = cv2.VideoCapture("_data/blue22.jpg")
-cap3 = cv2.VideoCapture("_data/green.jpeg")
-cap4 = cv2.VideoCapture("_data/green-blue.jpeg")
-cap5 = cv2.VideoCapture("_data/white.png")
+
+frame2 = cv2.imread("_data/blue22.jpg", cv2.IMREAD_COLOR)
+frame3 = cv2.imread("_data/green.jpeg", cv2.IMREAD_COLOR)
+frame4 = cv2.imread("_data/green-blue.jpeg", cv2.IMREAD_COLOR)
+frame5 = cv2.imread("_data/white.png", cv2.IMREAD_COLOR)
+
+video_frame = cv2.resize(frame2, (200, 200))
+video_frame2 = cv2.resize(frame3, (200, 200))
+video_frame3 = cv2.resize(frame4, (200, 200))
+video_frame4 = cv2.resize(frame5, (200, 200))
 
 color = ""
 display = {1: True, 2: True}
@@ -26,28 +32,6 @@ display = {1: True, 2: True}
 while (cap.isOpened()):
     ret, frame = cap.read()
     frame_height, frame_width, frame_channels = frame.shape
-    
-    ret2, frame2 = cap2.read()
-    ret3, frame3 = cap3.read()
-    ret4, frame4 = cap4.read()
-    ret5, frame5 = cap5.read()
-    #print("frame4 is ", frame4)
-    
-    try:
-        frame2_height, frame2_width, frame2_channels = frame2.shape
-        video_frame = cv2.resize(frame2, (200, 200))
-        
-        frame3_height, frame3_width, frame3_channels = frame3.shape
-        video_frame2 = cv2.resize(frame3, (200, 200))
-        
-        frame4_height, frame4_width, frame4_channels = frame4.shape
-        video_frame3 = cv2.resize(frame4, (200, 200))
-        
-        frame5_height, frame5_width, frame5_channels = frame5.shape
-        video_frame4 = cv2.resize(frame5, (200, 200))
-        
-    except AttributeError:
-        pass
     
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict,\
@@ -91,7 +75,7 @@ while (cap.isOpened()):
                 d = distance(tl, tr, br, bl, tl2, tr2, br2, bl2)
                 
                 # the distance is small enough
-                if (d <= 250):
+                if (d <= 200):
                     # accumualtor is white
                     if (color == ""):
                         color = "blue"
@@ -122,7 +106,7 @@ while (cap.isOpened()):
                 
                 d = distance(tl, tr, br, bl, tl2, tr2, br2, bl2)
                 
-                if (d <= 250):
+                if (d <= 200):
                     if (color == ""):
                         color = "green"
                     elif (color == "blue"):
