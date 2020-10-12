@@ -20,11 +20,13 @@ frame2 = cv2.imread("_data/blue22.jpg", cv2.IMREAD_COLOR)
 frame3 = cv2.imread("_data/green.jpeg", cv2.IMREAD_COLOR)
 frame4 = cv2.imread("_data/green-blue.jpeg", cv2.IMREAD_COLOR)
 frame5 = cv2.imread("_data/white.png", cv2.IMREAD_COLOR)
+ashbury = cv2.imread("_data/ashbury.jpeg", cv2.IMREAD_COLOR)
 
 video_frame = cv2.resize(frame2, (200, 200))
 video_frame2 = cv2.resize(frame3, (200, 200))
 video_frame3 = cv2.resize(frame4, (200, 200))
 video_frame4 = cv2.resize(frame5, (200, 200))
+ashbury_video = cv2.resize(ashbury, (200, 200))
 
 color = ""
 display = {1: True, 2: True}
@@ -57,6 +59,7 @@ while (cap.isOpened()):
                     #print("val is ", val)
                     found[val[0]][0] = True
                     found[val[0]].append(eindex)
+                    
         
                     
         if (found[1][0]):
@@ -91,6 +94,8 @@ while (cap.isOpened()):
             elif (display[1]):
                 augment(found[1][1], frame, corners, (width, height), video_frame,\
                         (frame_width, frame_height), img1)
+                
+                
                 
         if (found[2][0]):
             if (found[3][0]):
@@ -138,6 +143,15 @@ while (cap.isOpened()):
             else:
                 augment(found[3][1], frame, corners, (width, height), video_frame3,\
                         (frame_width, frame_height), img1)
+        if (found[4][0]):
+            tl = corners[found[4][1]][0][0]
+            tr = corners[found[4][1]][0][1]
+            br = corners[found[4][1]][0][2]
+            bl = corners[found[4][1]][0][3]
+        
+            augment(found[4][1], frame, corners, (width, height), ashbury_video,\
+                            (frame_width, frame_height), img1)
+        
       
             
     cv2.imshow('augmented', img1)
@@ -150,4 +164,3 @@ while (cap.isOpened()):
 cap.release()
 cv2.destroyAllWindows()
                 
-
